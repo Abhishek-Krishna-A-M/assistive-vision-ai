@@ -1,0 +1,9 @@
+ultralytics>=8.0.0
+transformers>=4.36.0
+easyocr>=1.7.0
+torch
+torchvision
+opencv-python
+pillow
+numpy
+pyttsx3
