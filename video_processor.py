@@ -15,8 +15,12 @@ class PipelineProcessor:
         self.nav_engine = NavigationEngine()
         self.speech = SpeechEngine()
 
-    def process_video(self, source_path=0, output_path=None, frame_skip=3):
+    def process_video(self, source_path="sample.mp4", output_path="output.mp4", frame_skip=3):
         cap = cv2.VideoCapture(source_path)
+        if not cap.isOpened():
+            print(f"Error: Could not open video source '{source_path}'.")
+            return
+
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         fps = int(cap.get(cv2.CAP_PROP_FPS)) or 30
@@ -27,6 +31,7 @@ class PipelineProcessor:
             writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
         frame_count = 0
+        print("Processing video frames...")
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
@@ -50,14 +55,18 @@ class PipelineProcessor:
 
             if writer:
                 writer.write(annotated)
-                
-            # Press 'q' to stop early during live video tests
-            cv2.imshow("Assistive Vision Pipeline", annotated)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+
+            if frame_count % 30 == 0:
+                print(f"Processed {frame_count} frames...")
 
         cap.release()
         if writer:
             writer.release()
-        cv2.destroyAllWindows()
-        print("Processing finished cleanly.")
+            
+        # Safely handle GUI destruction on headless systems
+        try:
+            cv2.destroyAllWindows()
+        except Exception:
+            pass
+
+        print(f"Processing finished cleanly! Saved output to: {output_path}")
