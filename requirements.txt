@@ -7,3 +7,5 @@ opencv-python
 pillow
 numpy
 gtts
+pyttsx3
+

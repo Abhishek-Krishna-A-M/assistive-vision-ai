@@ -21,8 +21,12 @@ class NavigationEngine:
     def _get_depth_level(self, depth_map, box):
         xmin, ymin, xmax, ymax = box
         h, w = depth_map.shape
-        xmin, ymin = max(0, xmin), max(0, ymin)
-        xmax, ymax = min(w, xmax), min(h, ymax)
+        xmin, ymin = max(0, int(xmin)), max(0, int(ymin))
+        xmax, ymax = min(w, int(xmax)), min(h, int(ymax))
+
+        if len(depth_map.shape) == 3:
+            depth_map = depth_map[:, :, 0] if depth_map.shape[2] == 1 else depth_map.mean(axis=2)
+        depth_map = depth_map.astype(np.float64)
 
         box_depth = depth_map[ymin:ymax, xmin:xmax]
         if box_depth.size == 0:
@@ -59,7 +63,6 @@ class NavigationEngine:
                 else:
                     instructions.append(f"{name.capitalize()} {pos}.")
                 self.last_announced[key] = current_time
-                break  # Alert max 1 primary object per cycle to keep audio simple
 
         # 2. Text/Sign Alerts (Only if no collision risk)
         if not instructions and ocr_results:

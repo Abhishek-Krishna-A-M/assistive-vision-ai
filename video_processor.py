@@ -15,7 +15,7 @@ class PipelineProcessor:
         self.nav_engine = NavigationEngine()
         self.speech = SpeechEngine()
 
-    def process_video(self, source_path="sample.mp4", output_path="output.mp4", frame_skip=3):
+    def process_video(self, source_path=0, output_path="output.mp4", frame_skip=3):
         cap = cv2.VideoCapture(source_path)
         if not cap.isOpened():
             print(f"Error: Could not open video source '{source_path}'.")
@@ -44,7 +44,10 @@ class PipelineProcessor:
             # OCR runs periodically to save processing bandwidth
             ocr_results = []
             if self.ocr_reader and (frame_count % frame_skip == 0):
-                ocr_results = self.ocr_reader.read_text(frame)
+                try:
+                    ocr_results = self.ocr_reader.read_text(frame)
+                except Exception:
+                    pass
 
             instructions = self.nav_engine.evaluate(detections, depth_map, ocr_results, width)
 
@@ -52,6 +55,10 @@ class PipelineProcessor:
                 self.speech.speak(instructions[0])
 
             annotated = annotate_frame(frame, detections, ocr_results, instructions)
+            
+            cv2.imshow("AI Assistive Vision", annotated)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
             if writer:
                 writer.write(annotated)
@@ -63,10 +70,6 @@ class PipelineProcessor:
         if writer:
             writer.release()
             
-        # Safely handle GUI destruction on headless systems
-        try:
-            cv2.destroyAllWindows()
-        except Exception:
-            pass
+        cv2.destroyAllWindows()
 
         print(f"Processing finished cleanly! Saved output to: {output_path}")

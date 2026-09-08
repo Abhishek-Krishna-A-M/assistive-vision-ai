@@ -28,6 +28,7 @@ class DepthEstimator:
         ).squeeze()
 
         depth_map = prediction.cpu().numpy()
-        # Relative depth normalization (0 to 1)
+        # Normalize to 0-255 for stable threshold comparisons
         depth_map = (depth_map - depth_map.min()) / (depth_map.max() - depth_map.min() + 1e-8)
+        depth_map = (depth_map * 255).astype(np.uint8)
         return depth_map

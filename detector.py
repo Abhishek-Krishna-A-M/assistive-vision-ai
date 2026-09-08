@@ -3,7 +3,10 @@ import config
 
 class ObjectDetector:
     def __init__(self, model_path=config.YOLO_MODEL_PATH):
-        self.model = YOLO(model_path)
+        try:
+            self.model = YOLO(model_path)
+        except Exception as e:
+            raise RuntimeError(f"Failed to load YOLO model '{model_path}': {e}")
 
     def detect(self, frame):
         results = self.model(frame, verbose=False, conf=config.YOLO_CONF_THRESH)[0]
